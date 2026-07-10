@@ -1,6 +1,7 @@
 # Insurance AI Assistant Fine-Tuning Project
 
 ## Contents
+
 1. Project Title
 2. Domain Selected
 3. Business Problem
@@ -25,6 +26,8 @@
 
 **Insurance AI Assistant Using QLoRA, Instruction Fine-Tuning, and DPO Alignment**
 
+---
+
 # 2. Domain Selected
 
 ## Commercial Insurance & Underwriting
@@ -33,11 +36,13 @@ This project focuses on building an AI-powered insurance assistant capable of an
 
 The objective was to adapt a foundation Large Language Model (LLM) to understand insurance-specific terminology, underwriting guidelines, risk management concepts, and respond professionally to users.
 
+---
+
 # 3. Business Problem
 
 Insurance professionals spend significant time reviewing submissions, analyzing risks, interpreting policy requirements, and answering repetitive underwriting questions.
 
-### Challenges
+## Challenges
 
 - Manual review of insurance submissions
 - Inconsistent underwriting responses
@@ -45,7 +50,7 @@ Insurance professionals spend significant time reviewing submissions, analyzing 
 - Knowledge dependency on experienced underwriters
 - Limited accessibility to insurance expertise
 
-### Project Goal
+## Project Goal
 
 Develop an Insurance AI Assistant capable of:
 
@@ -55,41 +60,90 @@ Develop an Insurance AI Assistant capable of:
 - Answering insurance-related questions
 - Producing professional and consistent responses
 
+---
+
 # 4. Architecture
 
-> Insert project architecture diagrams/screenshots here.
+## Solution Architecture
+
+```mermaid
+flowchart LR
+
+    DS[Insurance Dataset<br/>Commercial Insurance Data]
+
+    DS --> NI[Stage 1<br/>Non-Instruction Fine-Tuning]
+
+    BM[Qwen2.5-1.5B-Instruct<br/>Base Model]
+
+    BM --> NI
+
+    NI --> S1[Stage 1 Domain Model]
+
+    S1 --> IFT[Stage 2<br/>Instruction Fine-Tuning]
+
+    IFT --> S2[Instruction Tuned Model]
+
+    S2 --> DPO[Stage 3<br/>Direct Preference Optimization]
+
+    DPO --> FINAL[Final Insurance AI Assistant]
+
+    FINAL --> EVAL[Evaluation Framework]
+
+    EVAL --> JUDGE[Llama-3.1-8B-Instant<br/>LLM Judge]
+
+    JUDGE --> REPORT[Final Evaluation Report]
+```
 
 ## Training Pipeline
 
-Base Model (Qwen2.5-1.5B-Instruct)
-
-→ Non-Instruction Fine-Tuning
-
-→ Instruction Fine-Tuning
-
-→ DPO Alignment
-
-→ Final Insurance AI Assistant
+```text
+Insurance Dataset
+        │
+        ▼
+Qwen2.5-1.5B-Instruct
+        │
+        ▼
+Non-Instruction Fine-Tuning
+        │
+        ▼
+Instruction Fine-Tuning
+        │
+        ▼
+DPO Alignment
+        │
+        ▼
+Final Insurance AI Assistant
+```
 
 ## Evaluation Pipeline
 
+```text
 Base Model
+          \
+Stage 1 Model \
+               \
+Stage 2 Model -----> Llama-3.1-8B-Instant Judge Model
+               /
+Stage 3 Model /
+             /
+            ▼
 
-vs
+      Evaluation Report
+```
 
-Non-Instruction Model
+### Architecture Explanation
 
-vs
+1. Commercial insurance data was collected and transformed into training datasets.
+2. Qwen2.5-1.5B-Instruct was selected as the base model.
+3. QLoRA was used for parameter-efficient fine-tuning.
+4. Stage 1 introduced domain-specific insurance knowledge through Non-Instruction Fine-Tuning.
+5. Stage 2 improved instruction-following capability using Instruction Fine-Tuning.
+6. Stage 3 aligned model responses using Direct Preference Optimization (DPO).
+7. The final model was evaluated against all previous stages.
+8. Llama-3.1-8B-Instant was used as an independent LLM Judge to score and compare responses.
+9. Evaluation results were compiled into a final comparison report.
 
-Instruction-Tuned Model
-
-vs
-
-DPO Fine-Tuned Model
-
-→ Llama-3.1-8B-Instant (Judge Model)
-
-→ Evaluation Report
+---
 
 # 5. Dataset Details
 
@@ -117,7 +171,7 @@ The dataset was created using domain-specific insurance and underwriting content
 
 Non-instruction insurance knowledge dataset.
 
-**Format:**
+**Format**
 
 - Question
 - Answer
@@ -126,7 +180,7 @@ Non-instruction insurance knowledge dataset.
 
 Instruction-following dataset.
 
-**Format:**
+**Format**
 
 - Instruction
 - Input
@@ -136,11 +190,13 @@ Instruction-following dataset.
 
 Preference dataset for DPO training.
 
-**Format:**
+**Format**
 
 - Prompt
 - Chosen Response
 - Rejected Response
+
+---
 
 # 6. Model Used
 
@@ -175,6 +231,8 @@ Evaluation criteria included:
 - Professional Quality
 - Helpfulness
 
+---
+
 # 7. Non-Instruction Fine-Tuning Approach
 
 ## Objective
@@ -196,6 +254,8 @@ The model learned:
 
 However, response structure and instruction-following capability remained limited.
 
+---
+
 # 8. Instruction Fine-Tuning Approach
 
 ## Objective
@@ -214,6 +274,8 @@ The model became better at:
 - Providing structured answers
 - Maintaining conversational format
 - Producing professional responses
+
+---
 
 # 9. DPO Alignment Approach
 
@@ -239,6 +301,8 @@ The model generated:
 - Reduced hallucinations
 - Improved alignment with expected insurance responses
 
+---
+
 # 10. LoRA / QLoRA Configuration
 
 ## Fine-Tuning Technique
@@ -249,20 +313,27 @@ QLoRA was selected because it enables efficient fine-tuning on limited GPU resou
 
 ### Parameters Used
 
-- **Rank (r = 16)**
-  - Controls adapter capacity. Higher rank increases learning capability but also increases memory usage.
+#### Rank (r = 16)
 
-- **Alpha (lora_alpha = 32)**
-  - Controls how strongly LoRA adapters influence the base model.
+Controls adapter capacity. Higher rank increases learning capability but also increases memory usage.
 
-- **Dropout (lora_dropout = 0.05)**
-  - Helps reduce overfitting during training.
+#### Alpha (lora_alpha = 32)
 
-- **Learning Rate (learning_rate = 2e-4)**
-  - Enables learning of insurance-specific knowledge while preserving the base model's capabilities.
+Controls how strongly LoRA adapters influence the base model.
 
-- **Batch Size (per_device_train_batch_size = 2)**
-  - Selected based on available GPU memory in Google Colab.
+#### Dropout (lora_dropout = 0.05)
+
+Helps reduce overfitting during training.
+
+#### Learning Rate (learning_rate = 2e-4)
+
+Enables learning of insurance-specific knowledge while preserving the base model's capabilities.
+
+#### Batch Size (per_device_train_batch_size = 2)
+
+Selected based on available GPU memory in Google Colab.
+
+---
 
 # 11. Training Screenshots or Logs
 
@@ -270,11 +341,15 @@ Refer to training logs:
 
 https://github.com/Pzazz55/insurance-ai-assistant-finetuning/tree/main/reports
 
+---
+
 # 12. Before vs After Output Comparison
 
 Refer to the final evaluation report:
 
 https://github.com/Pzazz55/insurance-ai-assistant-finetuning/blob/main/reports/final_evaluation_20260710_025732.pdf
+
+---
 
 # 13. Final Observations
 
@@ -285,6 +360,8 @@ https://github.com/Pzazz55/insurance-ai-assistant-finetuning/blob/main/reports/f
 - DPO alignment improved response quality and professionalism.
 - QLoRA enabled efficient training on limited hardware.
 - Preference optimization produced the most consistent and useful outputs.
+
+---
 
 # 14. Challenges Faced
 
@@ -303,6 +380,8 @@ https://github.com/Pzazz55/insurance-ai-assistant-finetuning/blob/main/reports/f
 - Applied truncation strategies
 - Built automated evaluation pipelines
 - Implemented model comparison frameworks
+
+---
 
 # 15. Future Improvements
 
@@ -339,16 +418,24 @@ Develop specialized agents:
 
 ### 5. Web Application
 
-Convert the solution into an interactive application.
+Convert the solution into an interactive application using:
+
+- Streamlit
+- Gradio
+- FastAPI
 
 ### 6. Continuous Preference Learning
 
 Expand DPO datasets using production feedback and user interactions.
 
+---
+
 # 16. Important Links
 
-- **GitHub Repository**: https://github.com/Pzazz55/insurance-ai-assistant-finetuning/tree/main
-- **Hugging Face Profile**: https://huggingface.co/Pzazz55
+- GitHub Repository: https://github.com/Pzazz55/insurance-ai-assistant-finetuning/tree/main
+- Hugging Face Profile: https://huggingface.co/Pzazz55
+
+---
 
 # Conclusion
 
